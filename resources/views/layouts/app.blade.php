@@ -173,9 +173,9 @@
                 </div>
             </div>
             <div class="col-md-4 mb-3">
-                <h6 class="text-white fw-semibold">Info</h6>
-                <p class="small mb-1">Powered by <a href="https://newsapi.org" target="_blank">NewsAPI.org</a></p>
-                <p class="small">Built with Laravel 13 + Bootstrap 5</p>
+                <h6 class="text-white fw-semibold">Tentang BeritaKini</h6>
+                <p class="small mb-1">Portal berita Indonesia yang menyajikan berita terbaru berdasarkan topik pilihan pengguna.</p>
+                <p class="small">© 2026 BeritaKini. All Rights Reserved.</p>
             </div>
         </div>
         <hr style="border-color:#333">
