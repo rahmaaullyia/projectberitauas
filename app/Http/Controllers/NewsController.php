@@ -82,40 +82,54 @@ class NewsController extends Controller
     /**
      * Halaman utama: tampilkan berita dari semua kategori / kategori favorit
      */
-    public function index(Request $request)
+        public function index(Request $request)
     {
-        $user            = Auth::user();
-        $activeCategory  = $request->get('category', 'semua');
+        $user = Auth::user();
+        $activeCategory = $request->get('category', 'semua');
 
-        // Jika user login & punya favorit, tampilkan dari favorit
         $favoriteCategories = [];
         if ($user) {
             $favoriteCategories = json_decode($user->favorite_categories ?? '[]', true);
         }
 
-        if ($activeCategory === 'semua') {
-            // Ambil berita dari semua kategori (atau kategori favorit jika ada)
-            $categoriesToFetch = !empty($favoriteCategories) ? $favoriteCategories : array_keys(self::CATEGORIES);
-            $allArticles = [];
-            foreach (array_slice($categoriesToFetch, 0, 3) as $cat) {
-                $result = $this->fetchNews($cat);
-                $allArticles = array_merge($allArticles, array_slice($result['articles'], 0, 4));
-            }
-            $articles     = $allArticles;
-            $totalResults = count($articles);
-        } else {
-            $result       = $this->fetchNews($activeCategory, $request->get('page', 1));
-            $articles     = $result['articles'];
-            $totalResults = $result['totalResults'];
+        // Pisahkan berita berdasarkan kategori
+        $kategoriBerita = [];
+
+        foreach (array_keys(self::CATEGORIES) as $cat) {
+            $result = $this->fetchNews($cat);
+            $kategoriBerita[$cat] = $result['articles'];
         }
 
-        // Berita headline (3 teratas)
+        if ($activeCategory === 'semua') {
+
+            $articles = [];
+
+            foreach ($kategoriBerita as $cat => $berita) {
+                $articles = array_merge(
+                    $articles,
+                    array_slice($berita, 0, 4)
+                );
+            }
+
+            $totalResults = count($articles);
+
+        } else {
+
+            $articles = $kategoriBerita[$activeCategory] ?? [];
+            $totalResults = count($articles);
+        }
+
         $headlines = array_slice($articles, 0, 3);
         $restNews  = array_slice($articles, 3);
 
         return view('news.index', compact(
-            'articles', 'headlines', 'restNews',
-            'activeCategory', 'favoriteCategories', 'totalResults'
+            'articles',
+            'headlines',
+            'restNews',
+            'activeCategory',
+            'favoriteCategories',
+            'totalResults',
+            'kategoriBerita'
         ));
     }
 

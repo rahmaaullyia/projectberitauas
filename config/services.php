@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mhs 2: NewsAPI.org Configuration
+    |--------------------------------------------------------------------------
+    | Daftar gratis di https://newsapi.org/register
+    | Free plan: 100 request/hari, hanya untuk development/localhost
+    */
+    'newsapi' => [
+        'key' => env('NEWSAPI_KEY'),
+    ],
+
 ];
