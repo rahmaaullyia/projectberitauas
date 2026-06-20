@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NewsController;
-//use App\Http\Controllers\CommentController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -39,8 +39,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-feed', [NewsController::class, 'myFeed'])->name('news.feed');
 
     // Mhs 3: Komentar
-    //Route::post('/news/{id}/comments', [CommentController::class, 'store'])->name('comments.store');
-    //Route::delete('/comments/{id}', [CommentController::class, 'destroy'])->name('comments.destroy');
+    Route::post('/news/{id}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::delete('/comments/{id}', [CommentController::class, 'destroy'])->name('comments.destroy');
 });
 
 // ─── Mhs 3: Admin Panel ───────────────────────────────────────────────────────
