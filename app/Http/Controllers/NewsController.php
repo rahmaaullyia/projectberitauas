@@ -23,7 +23,7 @@ class NewsController extends Controller
     /**
      * Mhs 1: Simpan berita
      */
-    public function saveNews(string $id)
+      public function saveNews(string $id)
     {
         SavedNews::firstOrCreate([
             'user_id' => Auth::id(),
