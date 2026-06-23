@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\SavedNews;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 
 class NewsController extends Controller
 {
@@ -20,6 +20,13 @@ class NewsController extends Controller
         'sains'     => 'science',
     ];
 
+    // Kata kunci pencarian bahasa Indonesia untuk setiap kategori,
+    // dipakai dengan parameter qInTitle (mencari di judul saja) agar
+    // hasil benar-benar relevan dengan kategori, bukan sekadar
+    // menyebut satu kata umum di mana saja dalam artikel.
+    // Kata kunci dibuat lebih spesifik (frasa, bukan kata umum tunggal)
+    // agar tidak menangkap artikel promo/iklan yang kebetulan menyebut
+    // satu kata yang sama (misal "bola" pada promo makanan bertema Piala Dunia).
     const CATEGORY_KEYWORDS = [
         'teknologi' => '"kecerdasan buatan" OR startup OR aplikasi OR smartphone OR "perangkat lunak" OR gadget OR teknologi',
         'olahraga'  => '"timnas indonesia" OR "piala dunia" OR "sepak bola" OR "liga 1" OR atlet OR pertandingan OR olimpiade',
@@ -34,7 +41,19 @@ class NewsController extends Controller
     // kata kunci kategori, tapi isinya promosi produk/jasa).
     const EXCLUDED_DOMAINS = 'katalogpromosi.com,lokersemar.id';
 
-
+    /**
+     * Mhs 2: Ambil berita dari NewsAPI dengan cache 30 menit.
+     * Mengembalikan tepat 12 artikel per kategori:
+     * - Sumber utama: NewsAPI dengan qInTitle (kata kunci spesifik di
+     *   judul) dan excludeDomains untuk menyaring domain promo/iklan
+     *   yang sering muncul meskipun judulnya mengandung kata kunci.
+     * - Jika hasil relevan dari NewsAPI < 12, sisanya dilengkapi dari
+     *   data dummy lokal (DUMMY_ARTICLES) yang sudah ditulis sesuai
+     *   topik kategori masing-masing, supaya isi tetap konsisten dan
+     *   tidak tercampur konten promo/tidak relevan.
+     * Gambar yang sudah ada dari NewsAPI tidak pernah diganti; hanya
+     * artikel tanpa gambar yang diberi foto pengganti acak (picsum.photos).
+     */
     private function fetchNews(string $category = 'general', int $page = 1, string $query = ''): array
     {
         $cacheKey = "news_{$category}_{$page}_{$query}";
@@ -119,6 +138,9 @@ class NewsController extends Controller
         });
     }
 
+    /**
+     * Halaman utama: tampilkan berita dari semua kategori / kategori favorit
+     */
     public function index(Request $request)
     {
         $user            = Auth::user();
@@ -229,7 +251,10 @@ class NewsController extends Controller
         ]);
     }
 
-      public function saveNews(string $id)
+    /**
+     * Mhs 1: Simpan berita
+     */
+    public function saveNews(string $id)
     {
         SavedNews::firstOrCreate([
             'user_id' => Auth::id(),
@@ -296,6 +321,12 @@ class NewsController extends Controller
         return view('news.feed', compact('articles', 'favoriteCategories'));
     }
 
+    /**
+     * Data dummy untuk development (jika API key belum diset).
+     * Setiap kategori memiliki 12 artikel unik (judul, ringkasan, konten,
+     * sumber, dan penulis berbeda-beda) serta gambar yang berbeda di
+     * setiap kartu (tidak lagi memakai placeholder teks kategori yang sama).
+     */
     private function dummyNews(string $category): array
     {
         $data = self::DUMMY_ARTICLES[$category] ?? [
@@ -420,5 +451,3 @@ class NewsController extends Controller
         ],
     ];
 }
-
-    
