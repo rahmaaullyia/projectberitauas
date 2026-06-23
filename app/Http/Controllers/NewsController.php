@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\SavedNews;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 
 class NewsController extends Controller
 {
