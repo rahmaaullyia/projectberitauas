@@ -33,7 +33,91 @@ class NewsController extends Controller
     // tidak relevan dengan berita kategori (judulnya kebetulan mengandung
     // kata kunci kategori, tapi isinya promosi produk/jasa).
     const EXCLUDED_DOMAINS = 'katalogpromosi.com,lokersemar.id';
-    
+
+    private function fetchNews(string $category = 'general', int $page = 1, string $query = ''): array
+    {
+        $cacheKey = "news_{$category}_{$page}_{$query}";
+
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($category, $page, $query) {
+            $endpoint = 'https://newsapi.org/v2/everything';
+            $params = [
+                'apiKey'         => config('services.newsapi.key'),
+                'language'       => 'id',
+                'pageSize'       => 30,
+                'page'           => $page,
+                'sortBy'         => 'publishedAt',
+                'excludeDomains' => self::EXCLUDED_DOMAINS,
+            ];
+
+            if (!empty($query)) {
+                $params['q'] = $query;
+            } else {
+                $params['qInTitle'] = self::CATEGORY_KEYWORDS[$category] ?? $category;
+            }
+
+            $collected = collect();
+            $seenIds   = [];
+
+            try {
+                $response = Http::timeout(10)->get($endpoint, $params);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+
+                    $batch = collect($data['articles'] ?? [])
+                        ->map(function ($article, $index) use ($category) {
+                            $article['id']       = md5($article['url'] ?? ($category . $index . microtime()));
+                            $article['category'] = $category;
+
+                            // Gambar yang sudah ada dari NewsAPI TIDAK diubah.
+                            // Hanya artikel tanpa gambar diberi foto pengganti
+                            // acak (foto sungguhan, bukan teks placeholder).
+                            if (empty($article['urlToImage'])) {
+                                $article['urlToImage'] = 'https://picsum.photos/seed/' . $article['id'] . '/600/400';
+                            }
+
+                            return $article;
+                        })
+                        ->filter(fn($a) => !empty($a['title'])
+                            && $a['title'] !== '[Removed]'
+                            && !empty($a['description']));
+
+                    foreach ($batch as $article) {
+                        if ($collected->count() >= 12) {
+                            break;
+                        }
+                        if (!in_array($article['id'], $seenIds)) {
+                            $seenIds[]  = $article['id'];
+                            $collected->push($article);
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::error('NewsAPI Error: ' . $e->getMessage());
+            }
+
+            // Jika hasil dari NewsAPI sudah genap 12, gunakan langsung.
+            if ($collected->count() >= 12) {
+                return [
+                    'articles'     => $collected->values()->toArray(),
+                    'totalResults' => 12,
+                ];
+            }
+
+            // Jika hasil NewsAPI kurang dari 12 (atau kosong), lengkapi
+            // sisanya dengan data dummy lokal yang relevan dengan kategori
+            // agar total selalu 12 artikel dan isinya tetap sesuai topik.
+            $dummy    = $this->dummyNews($category);
+            $needed   = 12 - $collected->count();
+            $fillers  = array_slice($dummy['articles'], 0, $needed);
+
+            return [
+                'articles'     => array_merge($collected->values()->toArray(), $fillers),
+                'totalResults' => 12,
+            ];
+        });
+    }
+
       public function saveNews(string $id)
     {
         SavedNews::firstOrCreate([
