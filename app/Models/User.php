@@ -38,12 +38,27 @@ class User extends Authenticatable
     {
         return $this->hasMany(SavedNews::class);
     }
-    
-    protected function casts(): array
+
+    public function comments()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->hasMany(Comment::class);
+    }
+
+    // ─── Accessors ────────────────────────────────────────────────────────────
+
+    public function getFavoriteCategoriesArrayAttribute(): array
+    {
+        return json_decode($this->favorite_categories ?? '[]', true);
+    }
+
+    public function getAvatarAttribute(): string
+    {
+        $initials = collect(explode(' ', $this->name))
+            ->map(fn($word) => strtoupper(substr($word, 0, 1)))
+            ->take(2)
+            ->join('');
+
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name)
+            . '&background=6366f1&color=fff&bold=true&size=128';
     }
 }
