@@ -20,9 +20,20 @@ class NewsController extends Controller
         'sains'     => 'science',
     ];
 
-    /**
-     * Mhs 1: Simpan berita
-     */
+    const CATEGORY_KEYWORDS = [
+        'teknologi' => '"kecerdasan buatan" OR startup OR aplikasi OR smartphone OR "perangkat lunak" OR gadget OR teknologi',
+        'olahraga'  => '"timnas indonesia" OR "piala dunia" OR "sepak bola" OR "liga 1" OR atlet OR pertandingan OR olimpiade',
+        'bisnis'    => '"rupiah" OR IHSG OR ekonomi OR investasi OR "bank indonesia" OR perusahaan OR saham',
+        'kesehatan' => '"kementerian kesehatan" OR "rumah sakit" OR penyakit OR vaksin OR dokter OR kesehatan',
+        'hiburan'   => 'film OR konser OR musisi OR artis OR sinetron OR selebriti',
+        'sains'     => 'penelitian OR "ilmuwan" OR riset OR "luar angkasa" OR astronomi OR sains',
+    ];
+
+    // Domain yang sering memuat artikel promo/iklan/lowongan kerja yang
+    // tidak relevan dengan berita kategori (judulnya kebetulan mengandung
+    // kata kunci kategori, tapi isinya promosi produk/jasa).
+    const EXCLUDED_DOMAINS = 'katalogpromosi.com,lokersemar.id';
+    
       public function saveNews(string $id)
     {
         SavedNews::firstOrCreate([
