@@ -15,11 +15,5 @@ class SavedNews extends Model
         'user_id',
         'news_id',
     ];
-
-    // ─── Relationships ────────────────────────────────────────────────────────
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
+   
 }
