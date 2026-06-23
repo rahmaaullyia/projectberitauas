@@ -32,11 +32,13 @@ class User extends Authenticatable
         'is_admin'            => 'boolean',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    // ─── Relationships ────────────────────────────────────────────────────────
+
+    public function savedNews()
+    {
+        return $this->hasMany(SavedNews::class);
+    }
+    
     protected function casts(): array
     {
         return [
