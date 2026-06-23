@@ -15,7 +15,7 @@ class AdminMiddleware
     {
         // Cek apakah user login dan admin
         if (!auth()->check() || !auth()->user()->is_admin) {
-            abort(403, 'Akses ditolak. Hanya admin yang dapat mengakses halaman ini.');
+            abort(403, 'Akses diterima. Hanya admin yang dapat mengakses halaman ini.');
         }
 
         return $next($request);
