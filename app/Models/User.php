@@ -39,7 +39,10 @@ class User extends Authenticatable
         return $this->hasMany(SavedNews::class);
     }
 
-    
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
 
     // ─── Accessors ────────────────────────────────────────────────────────────
 
