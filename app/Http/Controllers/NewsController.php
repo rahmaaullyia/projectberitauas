@@ -34,6 +34,7 @@ class NewsController extends Controller
     // kata kunci kategori, tapi isinya promosi produk/jasa).
     const EXCLUDED_DOMAINS = 'katalogpromosi.com,lokersemar.id';
 
+
     private function fetchNews(string $category = 'general', int $page = 1, string $query = ''): array
     {
         $cacheKey = "news_{$category}_{$page}_{$query}";
@@ -116,6 +117,116 @@ class NewsController extends Controller
                 'totalResults' => 12,
             ];
         });
+    }
+
+    public function index(Request $request)
+    {
+        $user            = Auth::user();
+        $activeCategory  = $request->get('category', 'semua');
+
+        // Jika user login & punya favorit, tampilkan dari favorit
+        $favoriteCategories = [];
+        if ($user) {
+            $favoriteCategories = json_decode($user->favorite_categories ?? '[]', true);
+        }
+
+        if ($activeCategory === 'semua') {
+            // Ambil berita dari semua kategori (atau kategori favorit jika ada)
+            $categoriesToFetch = !empty($favoriteCategories) ? $favoriteCategories : array_keys(self::CATEGORIES);
+            $allArticles = [];
+            foreach (array_slice($categoriesToFetch, 0, 3) as $cat) {
+                $result = $this->fetchNews($cat);
+                $allArticles = array_merge($allArticles, array_slice($result['articles'], 0, 4));
+            }
+            $articles     = $allArticles;
+            $totalResults = count($articles);
+        } else {
+            $result       = $this->fetchNews($activeCategory, $request->get('page', 1));
+            $articles     = $result['articles'];
+            $totalResults = $result['totalResults'];
+        }
+
+        // Berita headline (3 teratas)
+        $headlines = array_slice($articles, 0, 3);
+        $restNews  = array_slice($articles, 3);
+
+        return view('news.index', compact(
+            'articles', 'headlines', 'restNews',
+            'activeCategory', 'favoriteCategories', 'totalResults'
+        ));
+    }
+
+    /**
+     * Detail berita
+     */
+    public function show(Request $request, string $id)
+    {
+        $category = $request->get('category', 'teknologi');
+        $result   = $this->fetchNews($category);
+
+        $article = collect($result['articles'])->firstWhere('id', $id);
+
+        if (!$article) {
+            abort(404, 'Berita tidak ditemukan.');
+        }
+
+        // Cek apakah sudah disimpan
+        $isSaved = false;
+        if (Auth::check()) {
+            $isSaved = SavedNews::where('user_id', Auth::id())
+                                ->where('news_id', $id)
+                                ->exists();
+        }
+
+        // Berita terkait (kategori sama, beda ID)
+        $related = collect($result['articles'])
+            ->where('id', '!=', $id)
+            ->take(4)
+            ->values();
+
+        // Load komentar
+        $comments = \App\Models\Comment::with('user')
+            ->where('news_id', $id)
+            ->latest()
+            ->get();
+
+        return view('news.show', compact('article', 'isSaved', 'related', 'comments', 'id'));
+    }
+
+    /**
+     * Berita per kategori
+     */
+    public function byCategory(Request $request, string $category)
+    {
+        $page   = $request->get('page', 1);
+        $result = $this->fetchNews($category, $page);
+
+        return view('news.category', [
+            'articles'       => $result['articles'],
+            'totalResults'   => $result['totalResults'],
+            'activeCategory' => $category,
+            'page'           => $page,
+        ]);
+    }
+
+    /**
+     * Pencarian berita
+     */
+    public function search(Request $request)
+    {
+        $query = $request->get('q', '');
+
+        if (empty($query)) {
+            return redirect()->route('home');
+        }
+
+        $result = $this->fetchNews('semua', 1, $query);
+
+        return view('news.search', [
+            'articles'     => $result['articles'],
+            'totalResults' => $result['totalResults'],
+            'query'        => $query,
+        ]);
     }
 
       public function saveNews(string $id)
