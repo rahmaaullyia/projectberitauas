@@ -70,7 +70,6 @@ class ProfileController extends Controller
 
         $user                     = Auth::user();
         $user->favorite_categories = json_encode($validated['categories']);
-        $user->save();
 
         return back()->with('success', 'Kategori favorit berhasil disimpan!');
     }
