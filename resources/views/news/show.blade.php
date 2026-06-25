@@ -176,6 +176,7 @@
                 @endforelse
 
                 {{-- Link ke kategori --}}
+                
                 <a href="{{ route('news.category', $article['category']) }}" class="btn btn-sm btn-outline-dark w-100 mt-2">
                     Lebih banyak dari {{ ucfirst($article['category']) }} <i class="bi bi-arrow-right"></i>
                 </a>
