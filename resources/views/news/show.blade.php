@@ -77,7 +77,7 @@
                 <figcaption class="text-muted small mt-1 text-center">{{ $article['source']['name'] ?? '' }}</figcaption>
             </figure>
             @endif
-
+            
             {{-- Konten --}}
             <div class="article-body" style="font-size:1.05rem;line-height:1.9;color:#222">
                 <p class="lead fw-medium">{{ $article['description'] }}</p>
@@ -176,6 +176,7 @@
                 @endforelse
 
                 {{-- Link ke kategori --}}
+                
                 <a href="{{ route('news.category', $article['category']) }}" class="btn btn-sm btn-outline-dark w-100 mt-2">
                     Lebih banyak dari {{ ucfirst($article['category']) }} <i class="bi bi-arrow-right"></i>
                 </a>
