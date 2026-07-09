@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'BeritaKini') - Portal Berita Indonesia</title>
+    <title>@yield('title', 'BeritaHariIni') - Portal Berita Indonesia</title>
 
     {{-- Bootstrap 5 --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
@@ -87,7 +87,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
         <a class="navbar-brand fw-bold" href="{{ route('home') }}">
-            <span>Berita</span><span style="color:#fff">Kini</span>
+            <span>Berita</span><span style="color:#fff">HariIni</span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
             <span class="navbar-toggler-icon"></span>
