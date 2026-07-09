@@ -130,7 +130,7 @@
     @else
     <div class="text-center py-5">
         <i class="bi bi-newspaper" style="font-size:3rem;color:#ccc"></i>
-        <p class="mt-2 text-muted">Belum ada berita untuk ditampilkan.</p>
+        <p class="mt-2 text-muted">tidak ada berita untuk ditampilkan.</p>
     </div>
     @endif
 
